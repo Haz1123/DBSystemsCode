@@ -77,4 +77,72 @@ public class btindex {
 
     }
 
+    private static class BPlusTree {
+        public Bucket root;
+        public int maxBucketSize = 10;
+
+        public BPlusTree() {
+            root = new Bucket(null, maxBucketSize);
+        }
+
+        public void append(long birthDate, int pageNum) {
+            Bucket targetBucket = findBucket(birthDate);
+            targetBucket.nodes.add(new Node(birthDate, pageNum));
+            targetBucket.nodes.sort(null);
+        }
+
+        public Bucket findBucket(long birthDate) {
+            Bucket target = root;
+            while (target.children.size() == 0) {
+                boolean found = false;
+                for (int i = 0; i < target.children.size(); i++) {
+                    if (birthDate < target.nodes.get(i).val) {
+                        found = true;
+                        target = target.children.get(i);
+                    }
+                    if (!found) {
+                        target = target.children.lastElement();
+                    }
+                }
+            }
+            return target;
+        }
+
+    }
+
+    private static class Node implements Comparable<Node> {
+        public long val;
+        public int page;
+
+        public Node(long val, int page) {
+            this.val = val;
+            this.page = page;
+        }
+
+        @Override
+        public int compareTo(btindex.Node o) {
+            if (this.val == o.val) {
+                return 0;
+            } else if (this.val < o.val) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+
+    }
+
+    private static class Bucket {
+        public Bucket parent;
+        public Vector<Bucket> children;
+        public Vector<Node> nodes;
+        public int maxSize;
+
+        public Bucket(Bucket parent, int maxSize) {
+            this.parent = parent;
+            this.children = new Vector<Bucket>();
+            this.nodes = new Vector<Node>();
+            this.maxSize = maxSize;
+        }
+    }
 }
