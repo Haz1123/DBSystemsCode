@@ -43,7 +43,7 @@ public class dbload {
         long finishTime = 0;
         boolean exceptionOccurred = false;
         final int numBytesFixedLengthRecord = constants.TOTAL_SIZE;
-        int numRecordsPerPage = pageSize/numBytesFixedLengthRecord;
+        int numRecordsPerPage = pageSize / numBytesFixedLengthRecord;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
         BufferedReader reader = null;
@@ -59,7 +59,8 @@ public class dbload {
 
             startTime = System.nanoTime();
 
-            // read in the header line (not processed further, as datafile fieldnames are known)
+            // read in the header line (not processed further, as datafile fieldnames are
+            // known)
             String line = reader.readLine();
 
             // read in lines while not the end of file
@@ -80,16 +81,17 @@ public class dbload {
                 int wikipageId = Integer.parseInt(valuesAsStrings[constants.WIKIPAGE_ID_POS]);
                 String description = valuesAsStrings[constants.DESCRIPTION_POS];
 
-                // parse datetime field into a date object, then get long datatype representation
+                // parse datetime field into a date object, then get long datatype
+                // representation
                 long birthDateLong = 0;
                 if (!birthDateStr.equals("NULL")) {
-                  Date birthDate = dateFormat.parse(birthDateStr);
-                  birthDateLong = birthDate.getTime();
+                    Date birthDate = dateFormat.parse(birthDateStr);
+                    birthDateLong = birthDate.getTime();
                 }
                 long deathDateLong = 0;
                 if (!deathDateStr.equals("NULL")) {
-                  Date deathDate = dateFormat.parse(deathDateStr);
-                  deathDateLong = deathDate.getTime();
+                    Date deathDate = dateFormat.parse(deathDateStr);
+                    deathDateLong = deathDate.getTime();
                 }
 
                 // Write bytes to data output stream
@@ -120,7 +122,8 @@ public class dbload {
                 }
             }
 
-            // At end of csv, check if there are records in the current page to be written out
+            // At end of csv, check if there are records in the current page to be written
+            // out
             if (numRecordsLoaded % numRecordsPerPage != 0) {
                 dataOutput.flush();
                 byte[] page = new byte[pageSize];
@@ -133,19 +136,15 @@ public class dbload {
             }
 
             finishTime = System.nanoTime();
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println("Error: File not present " + e.getMessage());
             exceptionOccurred = true;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.println("Error: IOExeption " + e.getMessage());
             exceptionOccurred = true;
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             System.err.println("Parse error when parsing date: " + e.getMessage());
-        }
-        finally {
+        } finally {
             // close input/output streams
             if (reader != null) {
                 reader.close();
@@ -166,7 +165,7 @@ public class dbload {
 
             System.out.println("The number of records loaded: " + numRecordsLoaded);
             System.out.println("The number of pages used: " + numberOfPagesUsed);
-            long timeInMilliseconds = (finishTime - startTime)/constants.MILLISECONDS_PER_SECOND;
+            long timeInMilliseconds = (finishTime - startTime) / constants.MILLISECONDS_PER_SECOND;
             System.out.println("Time taken: " + timeInMilliseconds + " ms");
         }
     }
@@ -186,16 +185,14 @@ public class dbload {
         // Check difference in string lengths
         if (lengthDiff == 0) {
             return original;
-        }
-        else if (lengthDiff > 0) {
+        } else if (lengthDiff > 0) {
             // if original string is too short, pad end with whitespace
             StringBuilder string = new StringBuilder(original);
             for (int i = 0; i < lengthDiff; i++) {
                 string.append(" ");
             }
             return string.toString();
-        }
-        else {
+        } else {
             // if original string is too long, shorten to required length
             return original.substring(0, length);
         }

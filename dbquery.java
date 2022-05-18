@@ -8,7 +8,8 @@ import java.util.Date;
 
 public class dbquery {
 
-    // Reads in a binary file of the argument-specified pagesize, prints out matching records
+    // Reads in a binary file of the argument-specified pagesize, prints out
+    // matching records
     public static void main(String[] args) throws IOException {
 
         // check for correct number of arguments
@@ -24,10 +25,10 @@ public class dbquery {
         Date startDate = new Date();
         Date endDate = new Date();
         try {
-          startDate = argDateFormat.parse(args[constants.DBQUERY_START_DATE_ARG]);
-          endDate = argDateFormat.parse(args[constants.DBQUERY_END_DATE_ARG]);
-          startDateLong = startDate.getTime();
-          endDateLong = endDate.getTime();
+            startDate = argDateFormat.parse(args[constants.DBQUERY_START_DATE_ARG]);
+            endDate = argDateFormat.parse(args[constants.DBQUERY_END_DATE_ARG]);
+            startDateLong = startDate.getTime();
+            endDateLong = endDate.getTime();
         } catch (ParseException e) {
             System.err.println("Error: invalid date " + e.getMessage());
         }
@@ -37,7 +38,7 @@ public class dbquery {
         long finishTime = 0;
         int numBytesInOneRecord = constants.TOTAL_SIZE;
         int numBytesIntField = Integer.BYTES;
-        int numRecordsPerPage = pageSize/numBytesInOneRecord;
+        int numRecordsPerPage = pageSize / numBytesInOneRecord;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         byte[] page = new byte[pageSize];
         FileInputStream inStream = null;
@@ -65,10 +66,13 @@ public class dbquery {
                 for (int i = 0; i < numRecordsPerPage; i++) {
 
                     // Copy record's person name and birth date
-                    System.arraycopy(page, ((i*numBytesInOneRecord) + constants.PERSON_NAME_OFFSET), personNameBytes, 0, constants.PERSON_NAME_SIZE);
-                    System.arraycopy(page, ((i*numBytesInOneRecord) + constants.BIRTH_DATE_OFFSET), birthDateBytes, 0, constants.BIRTH_DATE_SIZE);
+                    System.arraycopy(page, ((i * numBytesInOneRecord) + constants.PERSON_NAME_OFFSET), personNameBytes,
+                            0, constants.PERSON_NAME_SIZE);
+                    System.arraycopy(page, ((i * numBytesInOneRecord) + constants.BIRTH_DATE_OFFSET), birthDateBytes, 0,
+                            constants.BIRTH_DATE_SIZE);
 
-                    // Check if person name field is empty; if so, end of all records found (packed organisation)
+                    // Check if person name field is empty; if so, end of all records found (packed
+                    // organisation)
                     if (personNameBytes[0] == 0) {
                         // can stop checking records
                         break;
@@ -77,8 +81,8 @@ public class dbquery {
                     // Check for match
                     long birthDateLong = ByteBuffer.wrap(birthDateBytes).getLong();
                     if (0 == birthDateLong) {
-                      // skip NULL birth dates
-                      continue;
+                        // skip NULL birth dates
+                        continue;
                     }
                     Date birthDate = new Date(ByteBuffer.wrap(birthDateBytes).getLong());
                     // if match is found, copy bytes of other fields and print out the record
@@ -86,57 +90,63 @@ public class dbquery {
                         /*
                          * Copy the corresponding sections of "page" to the individual field byte arrays
                          */
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.BIRTH_PLACE_OFFSET), birthPlaceBytes, 0, constants.BIRTH_PLACE_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.DEATH_DATE_OFFSET), deathDateBytes, 0, constants.DEATH_DATE_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.FIELD_OFFSET), fieldBytes, 0, constants.FIELD_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.GENRE_OFFSET), genreBytes, 0, constants.GENRE_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.INSTRUMENT_OFFSET), instrumentBytes, 0, constants.INSTRUMENT_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.NATIONALITY_OFFSET), nationalityBytes, 0, constants.NATIONALITY_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.THUMBNAIL_OFFSET), thumbnailBytes, 0, constants.THUMBNAIL_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.WIKIPAGE_ID_OFFSET), wikipageIdBytes, 0, constants.WIKIPAGE_ID_SIZE);
-                        System.arraycopy(page, ((i*numBytesInOneRecord) + constants.DESCRIPTION_OFFSET), descriptionBytes, 0, constants.DESCRIPTION_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.BIRTH_PLACE_OFFSET),
+                                birthPlaceBytes, 0, constants.BIRTH_PLACE_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.DEATH_DATE_OFFSET),
+                                deathDateBytes, 0, constants.DEATH_DATE_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.FIELD_OFFSET), fieldBytes, 0,
+                                constants.FIELD_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.GENRE_OFFSET), genreBytes, 0,
+                                constants.GENRE_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.INSTRUMENT_OFFSET),
+                                instrumentBytes, 0, constants.INSTRUMENT_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.NATIONALITY_OFFSET),
+                                nationalityBytes, 0, constants.NATIONALITY_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.THUMBNAIL_OFFSET), thumbnailBytes,
+                                0, constants.THUMBNAIL_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.WIKIPAGE_ID_OFFSET),
+                                wikipageIdBytes, 0, constants.WIKIPAGE_ID_SIZE);
+                        System.arraycopy(page, ((i * numBytesInOneRecord) + constants.DESCRIPTION_OFFSET),
+                                descriptionBytes, 0, constants.DESCRIPTION_SIZE);
 
                         // Convert long data into Date object
                         long deathDateLong = ByteBuffer.wrap(deathDateBytes).getLong();
                         String deathDateStr = "NULL";
                         if (0 != deathDateLong) {
-                          Date deathDate = new Date(ByteBuffer.wrap(deathDateBytes).getLong());
-                          deathDateStr = dateFormat.format(deathDate);
+                            Date deathDate = new Date(ByteBuffer.wrap(deathDateBytes).getLong());
+                            deathDateStr = dateFormat.format(deathDate);
                         }
 
                         // Get a string representation of the record for printing to stdout
                         String record = new String(personNameBytes).trim() + ","
-                          + dateFormat.format(birthDate) + ","
-                          + new String(birthPlaceBytes).trim() + ","
-                          + deathDateStr + ","
-                          + new String(fieldBytes).trim() + ","
-                          + new String(genreBytes).trim() + ","
-                          + new String(instrumentBytes).trim() + ","
-                          + new String(nationalityBytes).trim() + ","
-                          + new String(thumbnailBytes).trim() + ","
-                          + ByteBuffer.wrap(wikipageIdBytes).getInt() + ","
-                          + new String(descriptionBytes).trim();
+                                + dateFormat.format(birthDate) + ","
+                                + new String(birthPlaceBytes).trim() + ","
+                                + deathDateStr + ","
+                                + new String(fieldBytes).trim() + ","
+                                + new String(genreBytes).trim() + ","
+                                + new String(instrumentBytes).trim() + ","
+                                + new String(nationalityBytes).trim() + ","
+                                + new String(thumbnailBytes).trim() + ","
+                                + ByteBuffer.wrap(wikipageIdBytes).getInt() + ","
+                                + new String(descriptionBytes).trim();
                         System.out.println(record);
                     }
                 }
             }
 
             finishTime = System.nanoTime();
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println("File not found " + e.getMessage());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.println("IO Exception " + e.getMessage());
-        }
-        finally {
+        } finally {
 
             if (inStream != null) {
                 inStream.close();
             }
         }
 
-        long timeInMilliseconds = (finishTime - startTime)/constants.MILLISECONDS_PER_SECOND;
+        long timeInMilliseconds = (finishTime - startTime) / constants.MILLISECONDS_PER_SECOND;
         System.out.println("Time taken: " + timeInMilliseconds + " ms");
     }
 }
