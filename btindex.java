@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 public class btindex {
     public static void main(String[] args) throws IOException {
@@ -59,12 +60,12 @@ public class btindex {
                     Date birthDate = new Date(ByteBuffer.wrap(birthDateBytes).getLong());
 
                     // if match is found, copy bytes of other fields and print out the record
-                    System.out.println(ByteBuffer.wrap(birthDateBytes).getLong());
                     tree.append(ByteBuffer.wrap(birthDateBytes).getLong(), i);
                 }
             }
 
             finishTime = System.nanoTime();
+            tree.verifyLeafOrder();
         } catch (FileNotFoundException e) {
             System.err.println("File not found " + e.getMessage());
         } catch (IOException e) {
@@ -83,14 +84,21 @@ public class btindex {
 
         public BPlusTree() {
             root = new Bucket(null, maxBucketSize);
+            root.isLeaf = true;
         }
 
         public void append(long birthDate, int pageNum) {
-            Bucket targetBucket = findBucket(birthDate);
-            targetBucket.nodes.add(new Node(birthDate, pageNum));
-            targetBucket.nodes.sort(null);
-            if (targetBucket.nodes.size() > targetBucket.maxSize) {
-                // Split and add def to parent
+            this.root.insert(new Node(birthDate, pageNum));
+        }
+
+        public void verifyLeafOrder() {
+            Bucket targetBucket = this.root;
+            while (targetBucket.isLeaf == false) {
+                targetBucket = targetBucket.children.firstElement();
+            }
+            while (targetBucket != null) {
+                System.out.println(targetBucket.nodes.firstElement().val);
+                targetBucket = targetBucket.nextBucket;
             }
         }
 
@@ -140,12 +148,133 @@ public class btindex {
         public Vector<Bucket> children;
         public Vector<Node> nodes;
         public int maxSize;
+        public boolean isLeaf;
+        public Bucket nextBucket;
 
         public Bucket(Bucket parent, int maxSize) {
+            this(parent, maxSize, false);
+        }
+
+        public Bucket(Bucket parent, int maxSize, boolean isLeaf) {
             this.parent = parent;
             this.children = new Vector<Bucket>();
             this.nodes = new Vector<Node>();
             this.maxSize = maxSize;
+            this.isLeaf = isLeaf;
         }
+
+        public String getStringRep(int dep) {
+            String out = "{";
+            out += ("\"Nodes\":[");
+            out += this.nodes.stream().map(s -> (Long.toString(s.val))).collect(Collectors.joining(","));
+            out += "],";
+            out += "\"Children\":[";
+            if (dep > 0) {
+                out += this.children.stream().map(c -> (c.getStringRep(dep - 1))).collect(Collectors.joining(","));
+            }
+            out += "]}";
+            return out;
+        }
+
+        public boolean verifyChildren() {
+            boolean out = true;
+            for (Bucket bucket : children) {
+                out = out && bucket.parent == this;
+            }
+            return out;
+        }
+
+        public Node insert(Node node) {
+            if (this.isLeaf) {
+                // This is a leaf bucket
+                this.nodes.add(node);
+                this.nodes.sort(null);
+                if (this.nodes.size() >= this.maxSize - 1) { // Need to split
+                    Bucket left = new Bucket(null, this.maxSize, true);
+                    for (int i = 0; i < this.nodes.size() / 2; i++) {
+                        left.nodes.add(this.nodes.get(i));
+                    }
+                    Bucket right = new Bucket(null, this.maxSize, true);
+                    for (int i = this.nodes.size() / 2; i < this.nodes.size(); i++) {
+                        right.nodes.add(this.nodes.get(i));
+                    }
+                    if (this.parent == null) {
+                        // First leaf bucket to be split.
+                        // Make this bucket into the root
+                        left.parent = this;
+                        right.parent = this;
+                        this.nodes.clear();
+                        this.nodes.add(right.nodes.firstElement());
+                        this.children.add(left);
+                        left.nextBucket = right;
+                        this.children.add(right);
+                        this.isLeaf = false;
+                    } else {
+                        right.parent = this.parent;
+                        right.nextBucket = this.nextBucket;
+                        this.nextBucket = right;
+                        this.nodes.clear();
+                        for (Node x : left.nodes) {
+                            this.nodes.add(x);
+                        }
+                        int selfIndex = this.parent.children.indexOf(this);
+                        this.parent.nodes.add(selfIndex, right.nodes.firstElement());
+                        this.parent.children.add(selfIndex + 1, right);
+                    }
+                }
+            } else {
+                boolean found = false;
+                Bucket target = this.children.lastElement(); // Default to last bucket
+                for (int i = 0; i < this.nodes.size() && !found; i++) {
+                    if (node.val < this.nodes.get(i).val) {
+                        found = true;
+                        target = this.children.get(i);
+                    }
+                }
+                target.insert(node);
+                if (this.nodes.size() >= this.maxSize - 1) {
+                    // This bucket needs to be split.
+                    Bucket left = new Bucket(this, maxSize);
+                    Bucket right = new Bucket(this, maxSize);
+                    for (int i = 0; i < this.nodes.size() / 2; i++) {
+                        left.nodes.add(this.nodes.get(i));
+                        left.children.add(this.children.get(i));
+                    }
+                    left.children.add(this.children.get((int) this.nodes.size() / 2));
+                    left.children.forEach(c -> c.parent = left);
+                    for (int i = this.nodes.size() / 2; i < this.nodes.size(); i++) {
+                        right.nodes.add(this.nodes.get(i));
+                        right.children.add(this.children.get(i + 1));
+                        this.children.get(i + 1).parent = right;
+                    }
+                    Node pushUp = right.nodes.firstElement();
+                    right.nodes.remove(pushUp);
+                    if (this.parent == null) {
+                        // This bucket is the root node.
+                        this.nodes.clear();
+                        this.children.clear();
+                        this.nodes.add(pushUp);
+                        this.children.add(left);
+                        this.children.add(right);
+                    } else {
+                        // This bucket is on the tree
+                        this.nodes.clear();
+                        this.children.clear();
+                        this.nodes.addAll(left.nodes);
+                        this.children.addAll(left.children);
+                        this.children.forEach(c -> c.parent = this);
+                        int selfIndex = this.parent.children.indexOf(this);
+                        right.parent = this.parent;
+                        this.parent.nodes.add(selfIndex, pushUp);
+                        this.parent.children.add(selfIndex + 1, right);
+                    }
+                }
+            }
+            if (!this.verifyChildren()) {
+                System.out.println(";");
+            }
+            return null;
+        }
+
     }
 }
