@@ -89,11 +89,14 @@ public class btindex {
             Bucket targetBucket = findBucket(birthDate);
             targetBucket.nodes.add(new Node(birthDate, pageNum));
             targetBucket.nodes.sort(null);
+            if (targetBucket.nodes.size() > targetBucket.maxSize) {
+                // Split and add def to parent
+            }
         }
 
         public Bucket findBucket(long birthDate) {
             Bucket target = root;
-            while (target.children.size() == 0) {
+            while (target.children.size() != 0) {
                 boolean found = false;
                 for (int i = 0; i < target.children.size(); i++) {
                     if (birthDate < target.nodes.get(i).val) {

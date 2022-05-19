@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch btindex",
+            "request": "launch",
+            "mainClass": "btindex",
+            "projectName": "Assignment2_73ce6f1a",
+            "args": [
+                "4096",
+                "out.txt"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Launch dbload",
+            "request": "launch",
+            "mainClass": "dbload",
+            "projectName": "Assignment2_73ce6f1a"
+        },
+        {
+            "type": "java",
+            "name": "Launch dbquery",
+            "request": "launch",
+            "mainClass": "dbquery",
+            "projectName": "Assignment2_73ce6f1a"
+        }
+    ]
+}
