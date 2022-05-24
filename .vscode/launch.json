@@ -18,7 +18,7 @@
             "projectName": "Assignment2_73ce6f1a",
             "args": [
                 "4096",
-                "out.txt"
+                "heap.4096"
             ]
         },
         {

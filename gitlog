@@ -1,0 +1,29 @@
+commit 31862d6d87faa22cde5abc06d20d51b70b06a96b
+Author: Harrison Burr <harrison.burr.1@gmail.com>
+Date:   Thu May 19 16:52:38 2022 +1000
+
+    Added tree insertion and debugging methods
+
+commit 7f19e40b2340b563ec5dc42315d8cb437e824145
+Author: Harrison Burr <harrison.burr.1@gmail.com>
+Date:   Thu May 19 13:08:44 2022 +1000
+
+    Bug fix in findBucket()
+
+commit ed48f6775b78fa68921a0cd70fe938c4c60ec248
+Author: Harrison Burr <harrison.burr.1@gmail.com>
+Date:   Thu May 19 01:05:17 2022 +1000
+
+    Created classes for holding B+ tree
+
+commit b29215feef7e29307af8998e07fa498f9d2b49f6
+Author: Harrison Burr <harrison.burr.1@gmail.com>
+Date:   Thu May 19 01:04:58 2022 +1000
+
+    Imported code from sample A1 solution
+
+commit b1ae259102f877a71661453bcf6a412f6283caa1
+Author: Harrison Burr <harrison.burr.1@gmail.com>
+Date:   Wed May 18 13:00:02 2022 +1000
+
+    Initial project setup

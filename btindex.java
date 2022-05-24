@@ -1,34 +1,39 @@
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Vector;
 import java.util.stream.Collectors;
+import java.lang.Math;
 
 public class btindex {
     public static void main(String[] args) throws IOException {
         int pageSize = Integer.parseInt(args[constants.DBQUERY_PAGE_SIZE_ARG]);
-        SimpleDateFormat argDateFormat = new SimpleDateFormat("yyyyMMdd");
-
-        String datafile = "heap." + pageSize;
+        String datafile = args[1];
         long startTime = 0;
         long finishTime = 0;
         int numBytesInOneRecord = constants.TOTAL_SIZE;
-        int numBytesIntField = Integer.BYTES;
         int numRecordsPerPage = pageSize / numBytesInOneRecord;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         byte[] page = new byte[pageSize];
         FileInputStream inStream = null;
 
         BPlusTree tree = new BPlusTree();
 
         try {
+            // Input file
             inStream = new FileInputStream(datafile);
+            // Output setup
+            FileOutputStream outputStream = new FileOutputStream("index." + pageSize);
+            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+            DataOutputStream dataOutput = new DataOutputStream(byteOutputStream);
             int numBytesRead = 0;
             startTime = System.nanoTime();
+
             // Create byte arrays for each field
             byte[] personNameBytes = new byte[constants.PERSON_NAME_SIZE];
             byte[] birthDateBytes = new byte[constants.BIRTH_DATE_SIZE];
@@ -57,15 +62,58 @@ public class btindex {
                         // skip NULL birth dates
                         continue;
                     }
-                    Date birthDate = new Date(ByteBuffer.wrap(birthDateBytes).getLong());
 
                     // if match is found, copy bytes of other fields and print out the record
                     tree.append(ByteBuffer.wrap(birthDateBytes).getLong(), i);
                 }
             }
+            // tree.verifyLeafOrder();
+
+            // Make index records.
+            int totalIndexRecords = tree.root.getTreeSize();
+            int recordsPerPage = Math.floorDiv(pageSize, IndexRecord.RECORD_SIZE);
+
+            Vector<Bucket> buckets = new Vector<Bucket>();
+            int i = 0;
+            buckets.add(tree.root);
+            // Builds (breadth first) ordered list of all buckets
+            while (i < buckets.size()) {
+                buckets.get(i).bucketOrder = i;
+                for (Bucket b : buckets.get(i).children) {
+                    buckets.add(b);
+                }
+                i++;
+            }
+            //
+            int totalPages = (int) Math.ceil((double) totalIndexRecords / (double) recordsPerPage);
+            byte[] indexBytes = new byte[totalPages * pageSize];
+            for (i = 0; i < buckets.size(); i++) {
+                Bucket tBucket = buckets.get(i);
+                IndexRecord newRecord = new IndexRecord();
+                if (buckets.get(i).isLeaf) { // Write leaf record
+                    for (int j = 0; j < tBucket.nodes.size(); j++) {
+                        newRecord.data[j] = tBucket.nodes.get(j).val;
+                        newRecord.page[j] = tBucket.nodes.get(j).page;
+                    }
+                    // Set the last slot to point to the next bucket.
+                    newRecord.page[BPlusTree.MAX_BUCKET_SIZE - 1] = Math.floorDiv(tBucket.nextBucket.bucketOrder,
+                            recordsPerPage);
+                    newRecord.offset[BPlusTree.MAX_BUCKET_SIZE - 1] = (tBucket.nextBucket.bucketOrder % recordsPerPage)
+                            * IndexRecord.RECORD_SIZE;
+                } else { // Write tree node record
+                    for (int j = 0; j < tBucket.nodes.size(); j++) {
+                        newRecord.data[j] = tBucket.nodes.get(j).val;
+                    }
+                    for (int j = 0; j < tBucket.children.size(); j++) {
+                        newRecord.page[j] = Math.floorDiv(tBucket.children.get(i).bucketOrder, recordsPerPage);
+                        newRecord.offset[j] = (i % recordsPerPage) * IndexRecord.RECORD_SIZE;
+                    }
+                }
+                // Write out record
+
+            }
 
             finishTime = System.nanoTime();
-            tree.verifyLeafOrder();
         } catch (FileNotFoundException e) {
             System.err.println("File not found " + e.getMessage());
         } catch (IOException e) {
@@ -75,15 +123,25 @@ public class btindex {
                 inStream.close();
             }
         }
+        System.out.println("NanoTime to complete: " + (startTime - finishTime));
+    }
+
+    private static class IndexRecord {
+        // Index Record: DATA<Long>[9] PAGE<int>[10] OFFSET<int>[10]
+        // Bytes: 9*8 10*4 10*4 = 152 bytes.
+        public static int RECORD_SIZE = 160;
+        public long[] data;
+        public int[] page;
+        public int[] offset;
 
     }
 
     private static class BPlusTree {
         public Bucket root;
-        public int maxBucketSize = 10;
+        public static int MAX_BUCKET_SIZE = 10;
 
         public BPlusTree() {
-            root = new Bucket(null, maxBucketSize);
+            root = new Bucket(null, MAX_BUCKET_SIZE);
             root.isLeaf = true;
         }
 
@@ -93,10 +151,10 @@ public class btindex {
 
         public void verifyLeafOrder() {
             Bucket targetBucket = this.root;
-            while (targetBucket.isLeaf == false) {
+            while (targetBucket.isLeaf == false) { // Descend to 'leftmost' leaf node
                 targetBucket = targetBucket.children.firstElement();
             }
-            while (targetBucket != null) {
+            while (targetBucket != null) { // Traverse over all leaf buckets.
                 System.out.println(targetBucket.nodes.firstElement().val);
                 targetBucket = targetBucket.nextBucket;
             }
@@ -150,6 +208,7 @@ public class btindex {
         public int maxSize;
         public boolean isLeaf;
         public Bucket nextBucket;
+        public int bucketOrder;
 
         public Bucket(Bucket parent, int maxSize) {
             this(parent, maxSize, false);
@@ -161,6 +220,14 @@ public class btindex {
             this.nodes = new Vector<Node>();
             this.maxSize = maxSize;
             this.isLeaf = isLeaf;
+        }
+
+        public int getTreeSize() {
+            int total = 1;
+            for (Bucket b : children) {
+                total += b.getTreeSize();
+            }
+            return total;
         }
 
         public String getStringRep(int dep) {

@@ -5,11 +5,19 @@ dbload:
 dbquery:
 	javac constants.java dbquery.java
 
+btindex:
+	javac btindex.java btsearch.java
+
 index:
-	 java dbload -p 4096 artist.trim.csv
+	java dbload -p 4096 artist.trim.csv
 
 query:
-	 java dbquery 4096 19700101 19701231
+	java dbquery 4096 19700101 19701231
+
+index:
+	java btindex 4096 heap.4096
+
+
 
 zip:
 	mkdir -p a1-sample-solution
