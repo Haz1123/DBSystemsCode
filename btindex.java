@@ -73,6 +73,8 @@ public class btindex {
             int totalIndexRecords = tree.root.getTreeSize();
             int recordsPerPage = Math.floorDiv(pageSize, IndexRecord.RECORD_SIZE);
 
+            int numberOfPagesUsed = 1;
+
             Vector<Bucket> buckets = new Vector<Bucket>();
             int i = 0;
             buckets.add(tree.root);
@@ -84,33 +86,94 @@ public class btindex {
                 }
                 i++;
             }
-            //
-            int totalPages = (int) Math.ceil((double) totalIndexRecords / (double) recordsPerPage);
-            byte[] indexBytes = new byte[totalPages * pageSize];
             for (i = 0; i < buckets.size(); i++) {
                 Bucket tBucket = buckets.get(i);
-                IndexRecord newRecord = new IndexRecord();
-                if (buckets.get(i).isLeaf) { // Write leaf record
-                    for (int j = 0; j < tBucket.nodes.size(); j++) {
-                        newRecord.data[j] = tBucket.nodes.get(j).val;
-                        newRecord.page[j] = tBucket.nodes.get(j).page;
+                if (tBucket.isLeaf) { // Write leaf record
+                    for (int j = 0; j < BPlusTree.MAX_BUCKET_SIZE - 1; j++) {
+                        // Write node values
+                        if (j < tBucket.nodes.size()) {
+                            dataOutput.writeLong(tBucket.nodes.get(j).val);
+                        } else {
+                            dataOutput.writeLong(Long.MIN_VALUE);
+                        }
                     }
-                    // Set the last slot to point to the next bucket.
-                    newRecord.page[BPlusTree.MAX_BUCKET_SIZE - 1] = Math.floorDiv(tBucket.nextBucket.bucketOrder,
-                            recordsPerPage);
-                    newRecord.offset[BPlusTree.MAX_BUCKET_SIZE - 1] = (tBucket.nextBucket.bucketOrder % recordsPerPage)
-                            * IndexRecord.RECORD_SIZE;
+                    for (int j = 0; j < BPlusTree.MAX_BUCKET_SIZE - 1; j++) {
+                        // Write page numbers
+                        if (j < tBucket.nodes.size()) {
+                            dataOutput.writeInt(tBucket.nodes.get(j).page);
+                        } else {
+                            dataOutput.writeInt(-1);
+                        }
+                    }
+                    if (tBucket.nextBucket != null) {
+                        // Write page for next bucket
+                        dataOutput.writeInt(Math.floorDiv(tBucket.nextBucket.bucketOrder, recordsPerPage));
+                    } else {
+                        dataOutput.writeInt(-1);
+                    }
+                    for (int j = 0; j < BPlusTree.MAX_BUCKET_SIZE - 1; j++) {
+                        // Buffer in page offset section
+                        dataOutput.writeInt(-1);
+                    }
+                    if (tBucket.nextBucket != null) {
+                        dataOutput
+                                .writeInt((tBucket.nextBucket.bucketOrder % recordsPerPage) * IndexRecord.RECORD_SIZE);
+                    } else {
+                        dataOutput.writeInt(-1);
+                    }
                 } else { // Write tree node record
-                    for (int j = 0; j < tBucket.nodes.size(); j++) {
-                        newRecord.data[j] = tBucket.nodes.get(j).val;
+                    for (int j = 0; j < BPlusTree.MAX_BUCKET_SIZE - 1; j++) {
+                        // Node values
+                        if (j < tBucket.nodes.size()) {
+                            dataOutput.writeLong(tBucket.nodes.get(j).val);
+                        } else {
+                            dataOutput.writeLong(Long.MIN_VALUE);
+                        }
                     }
-                    for (int j = 0; j < tBucket.children.size(); j++) {
-                        newRecord.page[j] = Math.floorDiv(tBucket.children.get(i).bucketOrder, recordsPerPage);
-                        newRecord.offset[j] = (i % recordsPerPage) * IndexRecord.RECORD_SIZE;
+                    for (int j = 0; j < BPlusTree.MAX_BUCKET_SIZE; j++) {
+                        // Index page pointers
+                        if (j < tBucket.children.size()) {
+                            dataOutput.writeInt(Math.floorDiv(tBucket.children.get(j).bucketOrder, recordsPerPage));
+                        } else {
+                            dataOutput.writeInt(-1);
+                        }
+                    }
+                    for (int j = 0; j < BPlusTree.MAX_BUCKET_SIZE; j++) {
+                        // Index record offsets
+                        if (j < tBucket.children.size()) {
+                            dataOutput.writeInt(
+                                    (tBucket.children.get(j).bucketOrder % recordsPerPage) * IndexRecord.RECORD_SIZE);
+                        } else {
+                            dataOutput.writeInt(-1);
+                        }
                     }
                 }
-                // Write out record
-
+                if (byteOutputStream.size() % IndexRecord.RECORD_SIZE != 0) {
+                    System.out.println("AAA");
+                }
+                // check if a new page will be needed
+                if ((i + 1) % recordsPerPage == 0) {
+                    dataOutput.flush();
+                    // Get the byte array of loaded records, copy to an empty page and writeout
+                    byte[] outPage = new byte[pageSize];
+                    byte[] records = byteOutputStream.toByteArray();
+                    int numberBytesToCopy = byteOutputStream.size();
+                    System.arraycopy(records, 0, outPage, 0, numberBytesToCopy);
+                    outputStream.write(page);
+                    numberOfPagesUsed++;
+                    byteOutputStream.reset();
+                }
+            }
+            // Check if any records still need to be written
+            if (byteOutputStream.size() != 0) {
+                dataOutput.flush();
+                byte[] outPage = new byte[pageSize];
+                byte[] records = byteOutputStream.toByteArray();
+                int numberBytesToCopy = byteOutputStream.size();
+                System.arraycopy(records, 0, outPage, 0, numberBytesToCopy);
+                outputStream.write(outPage);
+                numberOfPagesUsed++;
+                byteOutputStream.reset();
             }
 
             finishTime = System.nanoTime();
@@ -118,18 +181,14 @@ public class btindex {
             System.err.println("File not found " + e.getMessage());
         } catch (IOException e) {
             System.err.println("IO Exception " + e.getMessage());
-        } finally {
-            if (inStream != null) {
-                inStream.close();
-            }
         }
-        System.out.println("NanoTime to complete: " + (startTime - finishTime));
+        System.out.println("NanoTime to complete: " + (finishTime - startTime));
     }
 
     private static class IndexRecord {
         // Index Record: DATA<Long>[9] PAGE<int>[10] OFFSET<int>[10]
         // Bytes: 9*8 10*4 10*4 = 152 bytes.
-        public static int RECORD_SIZE = 160;
+        public static int RECORD_SIZE = 152;
         public long[] data;
         public int[] page;
         public int[] offset;
