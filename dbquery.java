@@ -25,14 +25,13 @@ public class dbquery {
         Date startDate = new Date();
         Date endDate = new Date();
         try {
-            startDate = argDateFormat.parse(args[3]);
-            endDate = argDateFormat.parse(args[4]);
+            startDate = argDateFormat.parse(args[constants.DBQUERY_START_DATE_ARG]);
+            endDate = argDateFormat.parse(args[constants.DBQUERY_END_DATE_ARG]);
             startDateLong = startDate.getTime();
             endDateLong = endDate.getTime();
         } catch (ParseException e) {
             System.err.println("Error: invalid date " + e.getMessage());
         }
-        String indexFile = args[2];
         String datafile = "heap." + pageSize;
         long startTime = 0;
         long finishTime = 0;
@@ -42,10 +41,9 @@ public class dbquery {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         byte[] page = new byte[pageSize];
         FileInputStream inStream = null;
-
+        int numBytesRead = 0;
         try {
             inStream = new FileInputStream(datafile);
-            int numBytesRead = 0;
             startTime = System.nanoTime();
             // Create byte arrays for each field
             byte[] personNameBytes = new byte[constants.PERSON_NAME_SIZE];

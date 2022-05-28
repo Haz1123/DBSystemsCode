@@ -1,3 +1,4 @@
+import java.util.Date;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -32,9 +33,9 @@ public class Bucket {
 
     public String getStringRep(int dep) {
         String out = "{";
-        out += ("\"Nodes\":[");
-        out += this.nodes.stream().map(s -> (Long.toString(s.val))).collect(Collectors.joining(","));
-        out += "],";
+        out += ("\"Nodes\":[\"");
+        out += this.nodes.stream().map(s -> (new Date(s.val).toString())).collect(Collectors.joining("\",\""));
+        out += "\"],";
         out += "\"Children\":[";
         if (dep > 0) {
             out += this.children.stream().map(c -> (c.getStringRep(dep - 1))).collect(Collectors.joining(","));

@@ -23,6 +23,19 @@
         },
         {
             "type": "java",
+            "name": "Launch btsearch",
+            "request": "launch",
+            "mainClass": "btsearch",
+            "projectName": "Assignment2_73ce6f1a",
+            "args": [
+                "heap.4096",
+                "index.4096",
+                "19700101",
+                "20000101"
+            ]
+        },
+        {
+            "type": "java",
             "name": "Launch dbload",
             "request": "launch",
             "mainClass": "dbload",
@@ -33,7 +46,12 @@
             "name": "Launch dbquery",
             "request": "launch",
             "mainClass": "dbquery",
-            "projectName": "Assignment2_73ce6f1a"
+            "projectName": "Assignment2_73ce6f1a",
+            "args": [
+                "4096",
+                "19700101",
+                "20000101"
+            ]
         }
     ]
 }

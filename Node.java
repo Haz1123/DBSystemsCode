@@ -1,3 +1,4 @@
+import java.sql.Date;
 
 public class Node implements Comparable<Node> {
     public long val;
@@ -12,7 +13,7 @@ public class Node implements Comparable<Node> {
     public int compareTo(Node o) {
         if (this.val == o.val) {
             return 0;
-        } else if (this.val < o.val) {
+        } else if (new Date(this.val).before(new Date(o.val))) {
             return -1;
         } else {
             return 1;
