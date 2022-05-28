@@ -14,7 +14,7 @@ index:
 query:
 	java dbquery 4096 19700101 19701231
 
-index:
+birthIndex:
 	java btindex 4096 heap.4096
 
 

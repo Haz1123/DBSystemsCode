@@ -25,14 +25,14 @@ public class dbquery {
         Date startDate = new Date();
         Date endDate = new Date();
         try {
-            startDate = argDateFormat.parse(args[constants.DBQUERY_START_DATE_ARG]);
-            endDate = argDateFormat.parse(args[constants.DBQUERY_END_DATE_ARG]);
+            startDate = argDateFormat.parse(args[3]);
+            endDate = argDateFormat.parse(args[4]);
             startDateLong = startDate.getTime();
             endDateLong = endDate.getTime();
         } catch (ParseException e) {
             System.err.println("Error: invalid date " + e.getMessage());
         }
-
+        String indexFile = args[2];
         String datafile = "heap." + pageSize;
         long startTime = 0;
         long finishTime = 0;

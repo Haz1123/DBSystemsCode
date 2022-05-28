@@ -1,11 +1,13 @@
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class btsearch {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         // check for correct number of arguments
         if (args.length != constants.DBQUERY_ARG_COUNT) {
@@ -37,6 +39,18 @@ public class btsearch {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         byte[] page = new byte[pageSize];
         FileInputStream inStream = null;
-    }
 
+        // Start by finding the page we want to start at.
+        try {
+            inStream = new FileInputStream(datafile);
+            int numBytesRead = 0;
+            startTime = System.nanoTime();
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found " + e.getMessage());
+        } finally {
+            if (inStream != null) {
+                inStream.close();
+            }
+        }
+    }
 }
