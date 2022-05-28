@@ -1,3 +1,4 @@
+import java.util.Date;
 
 public class BPlusTree {
     public Bucket root;
@@ -12,15 +13,19 @@ public class BPlusTree {
         this.root.insert(new Node(birthDate, pageNum));
     }
 
-    public void verifyLeafOrder() {
+    public int verifyLeafOrder() {
+        int nodes = 0;
         Bucket targetBucket = this.root;
         while (targetBucket.isLeaf == false) { // Descend to 'leftmost' leaf node
             targetBucket = targetBucket.children.firstElement();
         }
         while (targetBucket != null) { // Traverse over all leaf buckets.
-            System.out.println(targetBucket.nodes.firstElement().val);
+            for (int i = 0; i < targetBucket.nodes.size(); i++) {
+                nodes++;
+            }
             targetBucket = targetBucket.nextBucket;
         }
+        return nodes;
     }
 
     public Bucket findBucket(long birthDate) {

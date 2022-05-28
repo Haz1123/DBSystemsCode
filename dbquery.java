@@ -58,6 +58,8 @@ public class dbquery {
             byte[] wikipageIdBytes = new byte[constants.WIKIPAGE_ID_SIZE];
             byte[] descriptionBytes = new byte[constants.DESCRIPTION_SIZE];
 
+            int validRecords = 0;
+
             // until the end of the binary file is reached
             while ((numBytesRead = inStream.read(page)) != -1) {
                 // Process each record in page
@@ -73,6 +75,7 @@ public class dbquery {
                     // organisation)
                     if (personNameBytes[0] == 0) {
                         // can stop checking records
+                        System.err.println("No name");
                         break;
                     }
 
@@ -85,6 +88,7 @@ public class dbquery {
                     Date birthDate = new Date(ByteBuffer.wrap(birthDateBytes).getLong());
                     // if match is found, copy bytes of other fields and print out the record
                     if (!startDate.after(birthDate) && !endDate.before(birthDate)) {
+                        validRecords++;
                         /*
                          * Copy the corresponding sections of "page" to the individual field byte arrays
                          */
@@ -131,6 +135,7 @@ public class dbquery {
                     }
                 }
             }
+            System.out.println(validRecords);
 
             finishTime = System.nanoTime();
         } catch (FileNotFoundException e) {

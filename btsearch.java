@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ public class btsearch {
 
         // check for correct number of arguments
         if (args.length != 4) {
+            System.err.println(args.length);
             System.err.println("Error: Incorrect number of arguments were input");
             return;
         }
@@ -66,6 +68,10 @@ public class btsearch {
                             nextRecordPage = targetRecord.page[i];
                             nextRecordOffset = targetRecord.offset[i];
                             nextRecordFound = true;
+                        } else if (new Date(targetRecord.data[i]).equals(startDate)) {
+                            nextRecordPage = targetRecord.page[i];
+                            nextRecordOffset = targetRecord.offset[i];
+                            nextRecordFound = true;
                         }
                     }
                     System.arraycopy(indexFileBytes, (nextRecordPage * pageSize) + nextRecordOffset, recordBytes, 0,
@@ -80,6 +86,7 @@ public class btsearch {
             while (continueSearch) {
                 for (int i = 0; i < targetRecord.data.length && targetRecord.data[i] != Long.MIN_VALUE; i++) {
                     Date targetDate = new Date(targetRecord.data[i]);
+                    // System.out.println(targetRecord.page[i] + ":" + targetDate.toString());
                     if (!startDate.after(targetDate) && !endDate.before(targetDate)) {
                         validRecords++;
                         targetPages.add(targetRecord.page[i]);
@@ -118,8 +125,19 @@ public class btsearch {
             byte[] wikipageIdBytes = new byte[constants.WIKIPAGE_ID_SIZE];
             byte[] descriptionBytes = new byte[constants.DESCRIPTION_SIZE];
 
-            while ((numBytesRead = inStream.read(page)) != -1) {
-                // Process each record in page
+            Integer[] arg0 = new Integer[10];
+            Integer[] relevantPages = targetPages.toArray(arg0);
+            int currentPage = 0;
+            int lastPage = 0;
+            inStream.read(page);
+            for (int pageIndex = 0; pageIndex < relevantPages.length; pageIndex++) {
+                // Read in the number of pages in between the last page and this page
+                for (int j = lastPage; j < relevantPages[pageIndex]; j++) {
+                    currentPage++;
+                    inStream.read(page);
+                }
+
+                // Check records in page (using example code)
                 for (int i = 0; i < numRecordsPerPage; i++) {
 
                     // Copy record's person name and birth date
@@ -187,8 +205,12 @@ public class btsearch {
                                 + ByteBuffer.wrap(wikipageIdBytes).getInt() + ","
                                 + new String(descriptionBytes).trim();
                         System.out.println(record);
+                    } else {
+                        System.err.println("False flag?");
                     }
                 }
+
+                lastPage = relevantPages[pageIndex];
             }
 
             finishTime = System.nanoTime();

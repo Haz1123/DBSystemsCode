@@ -39,6 +39,8 @@ public class btindex {
 
             int currentPage = 0;
 
+            int totalValidRecords = 0;
+
             while ((numBytesRead = inStream.read(page)) != -1) {
                 // Process each record in page
                 for (int i = 0; i < numRecordsPerPage; i++) {
@@ -63,12 +65,13 @@ public class btindex {
                         continue;
                     }
 
+                    totalValidRecords++;
                     tree.append(ByteBuffer.wrap(birthDateBytes).getLong(), currentPage);
                 }
                 currentPage++;
             }
-            // tree.verifyLeafOrder();
-
+            System.out.println(totalValidRecords);
+            System.out.println(tree.verifyLeafOrder());
             // Make index records.
             int totalIndexRecords = tree.root.getTreeSize();
             int recordsPerPage = Math.floorDiv(pageSize, IndexRecord.RECORD_SIZE);

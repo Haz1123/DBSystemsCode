@@ -11,7 +11,7 @@ public class Node implements Comparable<Node> {
 
     @Override
     public int compareTo(Node o) {
-        if (this.val == o.val) {
+        if (new Date(this.val).equals(new Date(o.val))) {
             return 0;
         } else if (new Date(this.val).before(new Date(o.val))) {
             return -1;
