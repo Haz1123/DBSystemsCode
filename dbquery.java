@@ -135,7 +135,6 @@ public class dbquery {
                     }
                 }
             }
-            System.out.println(validRecords);
 
             finishTime = System.nanoTime();
         } catch (FileNotFoundException e) {

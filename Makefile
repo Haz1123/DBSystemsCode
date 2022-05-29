@@ -8,6 +8,8 @@ dbquery:
 btindex:
 	javac btindex.java btsearch.java
 
+compileAll: dbload dbquery btindex
+
 index:
 	java dbload -p 4096 artist.trim.csv
 

@@ -1290,4 +1290,4 @@ Mariko Suzuki,1970-01-30 12:00:00,{Tokyo|Minato Tokyo},NULL,NULL,NULL,NULL,NULL,
 Marina Leonardi,1970-01-01 12:00:00,NULL,NULL,NULL,NULL,NULL,Italy,NULL,30317204,Italian composer
 Mario Robinson,1970-01-01 12:00:00,NULL,NULL,NULL,NULL,NULL,NULL,NULL,14184009,American artist
 1290
-Time taken: 319 ms
+Time taken: 153 ms
