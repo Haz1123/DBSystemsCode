@@ -111,7 +111,7 @@ public class btsearch {
 
             // Read from these pages using targetPages
             inStream = new FileInputStream(datafile);
-            startTime = System.nanoTime();
+
             // Create byte arrays for each field
             byte[] personNameBytes = new byte[constants.PERSON_NAME_SIZE];
             byte[] birthDateBytes = new byte[constants.BIRTH_DATE_SIZE];
@@ -220,6 +220,7 @@ public class btsearch {
         } finally {
 
         }
-
+        long timeInMilliseconds = (finishTime - startTime) / constants.MILLISECONDS_PER_SECOND;
+        System.out.println("Time taken: " + timeInMilliseconds + " ms");
     }
 }
