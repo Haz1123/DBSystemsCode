@@ -114,8 +114,7 @@ public class btsearch {
             }
 
             Integer[] relevantPages = targetPages.toArray(new Integer[0]);
-            int lastPage = 0;
-            datafileInStream.read(datafilePage);
+            int lastPage = -1;
             for (int pageIndex = 0; pageIndex < relevantPages.length; pageIndex++) {
                 // Read in the number of pages in between the last page and this page
                 if ((relevantPages[pageIndex] - lastPage) - 1 >= 1) {
@@ -197,7 +196,9 @@ public class btsearch {
                                 + new String(descriptionBytes).trim();
                         System.out.println(record);
                     } else {
-                        System.err.println("False flag?");
+                        // if (numRecordsPerPage == 1) {
+                        // System.out.println("Issue");
+                        // }
                     }
                 }
 

@@ -1,0 +1,15 @@
+Test1
+1291c1291
+< Time taken: 281 ms
+---
+> Time taken: 165 ms
+Test1
+1291c1291
+< Time taken: 131 ms
+---
+> Time taken: 106 ms
+Test3
+2356c2356
+< Time taken: 255 ms
+---
+> Time taken: 144 ms

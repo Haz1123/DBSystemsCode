@@ -1289,4 +1289,4 @@ Mariko Morikawa,1970-02-10 12:00:00,{Japan|Chiba Prefecture},NULL,NULL,NULL,NULL
 Mariko Suzuki,1970-01-30 12:00:00,{Tokyo|Minato Tokyo},NULL,NULL,NULL,NULL,NULL,NULL,4701288,Japanese voice actress
 Marina Leonardi,1970-01-01 12:00:00,NULL,NULL,NULL,NULL,NULL,Italy,NULL,30317204,Italian composer
 Mario Robinson,1970-01-01 12:00:00,NULL,NULL,NULL,NULL,NULL,NULL,NULL,14184009,American artist
-Time taken: 146 ms
+Time taken: 84 ms

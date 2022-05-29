@@ -10,7 +10,7 @@ import java.lang.Math;
 
 public class btindex {
     public static void main(String[] args) throws IOException {
-        int pageSize = Integer.parseInt(args[constants.DBQUERY_PAGE_SIZE_ARG]);
+        int pageSize = Integer.parseInt(args[0].substring(args[0].indexOf(".") + 1));
         String datafile = args[1];
         long startTime = 0;
         long finishTime = 0;
@@ -24,6 +24,7 @@ public class btindex {
         try {
             // Input file
             inStream = new FileInputStream(datafile);
+
             // Output setup
             FileOutputStream outputStream = new FileOutputStream("index." + pageSize);
             ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
@@ -49,14 +50,11 @@ public class btindex {
                     System.arraycopy(page, ((i * numBytesInOneRecord) + constants.BIRTH_DATE_OFFSET), birthDateBytes, 0,
                             constants.BIRTH_DATE_SIZE);
 
-                    // Check if person name field is empty; if so, end of all records found (packed
-                    // organisation)
+                    // Remove invalid records.
                     if (personNameBytes[0] == 0) {
                         // can stop checking records
                         break;
                     }
-
-                    // Check for match
                     long birthDateLong = ByteBuffer.wrap(birthDateBytes).getLong();
                     if (0 == birthDateLong) {
                         // skip NULL birth dates
