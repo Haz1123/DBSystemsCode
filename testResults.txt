@@ -1,15 +1,20 @@
 Test1
 1291c1291
-< Time taken: 281 ms
+< Time taken: 230 ms
 ---
-> Time taken: 165 ms
+> Time taken: 104 ms
 Test1
 1291c1291
-< Time taken: 131 ms
+< Time taken: 139 ms
 ---
-> Time taken: 106 ms
+> Time taken: 75 ms
 Test3
 2356c2356
-< Time taken: 255 ms
+< Time taken: 220 ms
 ---
-> Time taken: 144 ms
+> Time taken: 97 ms
+Test4
+66818c66818
+< Time taken: 1435 ms
+---
+> Time taken: 1341 ms

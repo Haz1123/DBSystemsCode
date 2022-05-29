@@ -32,6 +32,7 @@ test1:
 	@ echo "Running query."
 	@ java dbquery 4096 19700101 19701231 > dbqueryResult.txt
 	@ java btsearch heap.4096 index.4096 19700101 19701231 > btindexResult.txt
+	@ rm -rf temp.txt
 	@ echo "Test1" >> testResults.txt
 	@ diff dbqueryResult.txt btindexResult.txt >> testResults.txt || true
 
@@ -44,6 +45,7 @@ test2:
 	@ echo "Running query."
 	@ java dbquery 8192 19700101 19701231 > dbqueryResult.txt
 	@ java btsearch heap.8192 index.8192 19700101 19701231 > btindexResult.txt
+	@ rm -rf temp.txt
 	@ echo "Test1" >> testResults.txt
 	@ diff dbqueryResult.txt btindexResult.txt >> testResults.txt || true
 
@@ -56,7 +58,21 @@ test3:
 	@ echo "Running query."
 	@ java dbquery 4096 19730101 19741231 > dbqueryResult.txt
 	@ java btsearch heap.4096 index.4096 19730101 19741231 > btindexResult.txt
+	@ rm -rf temp.txt
 	@ echo "Test3" >> testResults.txt
+	@ diff dbqueryResult.txt btindexResult.txt >> testResults.txt || true
+
+test4:
+	@# Pagesize 4096, between dates 19000101 20220101
+	@ echo "Running test 4."
+	@ echo "Building heap & index."
+	@ java dbload -p 4096 artist.trim.csv > temp.txt
+	@ java btindex 4096 heap.4096 > temp.txt
+	@ echo "Running query."
+	@ java dbquery 4096 19000101 20220101 > dbqueryResult.txt
+	@ java btsearch heap.4096 index.4096 19000101 20220101 > btindexResult.txt
+	@ rm -rf temp.txt
+	@ echo "Test4" >> testResults.txt
 	@ diff dbqueryResult.txt btindexResult.txt >> testResults.txt || true
 
 testall: clean compileAll
@@ -65,7 +81,10 @@ testall: clean compileAll
 	@ make test1
 	@ make test2
 	@ make test3
+	@ make test4
 	@ echo "Tests saved to testResultst.txt"
+	@ echo "Test results:"
+	@ cat testResults.txt
 	
 
 
