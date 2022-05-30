@@ -95,6 +95,7 @@ testall: clean compileAll
 	@ make test2
 	@ make test3
 	@ make test4
+	@ make test5
 	@ echo "Tests saved to testResultst.txt"
 	@ echo "Test results:"
 	@ cat testResults.txt

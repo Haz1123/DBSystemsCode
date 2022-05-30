@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 public class Bucket {
     public Bucket parent;
     public Vector<Bucket> children;
-    public Vector<Node> nodes;
+    public Vector<DatePageDT> nodes;
     public int maxSize;
     public boolean isLeaf;
     public Bucket nextBucket;
@@ -18,7 +18,7 @@ public class Bucket {
     public Bucket(Bucket parent, int maxSize, boolean isLeaf) {
         this.parent = parent;
         this.children = new Vector<Bucket>();
-        this.nodes = new Vector<Node>();
+        this.nodes = new Vector<DatePageDT>();
         this.maxSize = maxSize;
         this.isLeaf = isLeaf;
     }
@@ -52,7 +52,7 @@ public class Bucket {
         return out;
     }
 
-    public Node insert(Node node) {
+    public DatePageDT insert(DatePageDT node) {
         if (this.isLeaf) {
             // This is a leaf bucket
             this.nodes.add(node);
@@ -82,7 +82,7 @@ public class Bucket {
                     right.nextBucket = this.nextBucket;
                     this.nextBucket = right;
                     this.nodes.clear();
-                    for (Node x : left.nodes) {
+                    for (DatePageDT x : left.nodes) {
                         this.nodes.add(x);
                     }
                     int selfIndex = this.parent.children.indexOf(this);
@@ -115,7 +115,7 @@ public class Bucket {
                     right.children.add(this.children.get(i + 1));
                     this.children.get(i + 1).parent = right;
                 }
-                Node pushUp = right.nodes.firstElement();
+                DatePageDT pushUp = right.nodes.firstElement();
                 right.nodes.remove(pushUp);
                 if (this.parent == null) {
                     // This bucket is the root node.

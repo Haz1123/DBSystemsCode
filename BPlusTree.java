@@ -9,7 +9,7 @@ public class BPlusTree {
     }
 
     public void append(long birthDate, int pageNum) {
-        this.root.insert(new Node(birthDate, pageNum));
+        this.root.insert(new DatePageDT(birthDate, pageNum));
     }
 
     public int verifyLeafOrder() {
