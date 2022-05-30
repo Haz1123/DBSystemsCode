@@ -75,6 +75,19 @@ test4:
 	@ echo "Test4" >> testResults.txt
 	@ diff dbqueryResult.txt btindexResult.txt >> testResults.txt || true
 
+test5:
+	@# Pagesize 4096, between dates 19700101 19700102
+	@ echo "Running test 5."
+	@ echo "Building heap & index."
+	@ java dbload -p 4096 artist.trim.csv > temp.txt
+	@ java btindex 4096 heap.4096 > temp.txt
+	@ echo "Running query."
+	@ java dbquery 4096 19700101 19700102 > dbqueryResult.txt
+	@ java btsearch heap.4096 index.4096 19700101 19700102 > btindexResult.txt
+	@ rm -rf temp.txt
+	@ echo "Test5" >> testResults.txt
+	@ diff dbqueryResult.txt btindexResult.txt >> testResults.txt || true
+
 testall: clean compileAll
 	@# Tests write output to testResults.txt
 	@ echo "Running tests, may take some time."
